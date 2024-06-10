@@ -7,19 +7,16 @@ import (
 	"time"
 )
 
-// Item представляє елемент рюкзака з вагою та вартістю.
 type Item struct {
 	name   string
 	weight int
 	value  int
 }
 
-// Individual представляє рішення - набір бітів, де 1 вказує на включення елементу, а 0 - на виключення.
 type Individual struct {
 	bits []int
 }
 
-// Constants for genetic algorithm.
 const (
 	MAX_KNAPSACK_WEIGHT = 400
 	MUTATION_RATE       = 0.1
@@ -54,14 +51,13 @@ var (
 	}
 )
 
-// Initializes a random population.
 func generateInitialPopulation(count int) []Individual {
 	population := make([]Individual, 0)
 
 	for len(population) < count {
 		bits := make([]int, len(items))
 		for i := range bits {
-			bits[i] = rand.Intn(2)
+			bits[i] = rand.Intn(1)
 		}
 		population = append(population, Individual{bits})
 	}
@@ -69,7 +65,6 @@ func generateInitialPopulation(count int) []Individual {
 	return population
 }
 
-// Computes the fitness of an individual.
 func (ind *Individual) fitness() int {
 	totalValue := 0
 	totalWeight := 0
@@ -88,7 +83,6 @@ func (ind *Individual) fitness() int {
 	return 0
 }
 
-// Tournament selection of parents.
 func selection(population []Individual) []Individual {
 	parents := make([]Individual, 2)
 
@@ -105,7 +99,6 @@ func selection(population []Individual) []Individual {
 	return parents
 }
 
-// Single-point crossover.
 func crossover(parents []Individual) []Individual {
 	n := len(parents[0].bits)
 	crossoverPoint := rand.Intn(n)
@@ -116,7 +109,6 @@ func crossover(parents []Individual) []Individual {
 	return []Individual{{child1}, {child2}}
 }
 
-// Mutation.
 func mutate(individuals []Individual) {
 	for i := range individuals {
 		for j := range individuals[i].bits {
@@ -127,7 +119,6 @@ func mutate(individuals []Individual) {
 	}
 }
 
-// Generates the next generation.
 func nextGeneration(population []Individual) []Individual {
 	nextGen := make([]Individual, 0)
 
@@ -151,7 +142,6 @@ func nextGeneration(population []Individual) []Individual {
 	return nextGen[:len(population)]
 }
 
-// Solves the knapsack problem.
 func solveKnapsack() Individual {
 	rand.Seed(time.Now().UnixNano())
 	population := generateInitialPopulation(6)
@@ -174,16 +164,31 @@ func solveKnapsack() Individual {
 }
 
 func main() {
-	solution := solveKnapsack()
-	totalValue := 0
+	var solution Individual
 	totalWeight := 0
+	totalValue := 0
+
+	for {
+		solution = solveKnapsack()
+		totalWeight = 0
+		totalValue = 0
+
+		for i, bit := range solution.bits {
+			if bit == 1 {
+				totalWeight += items[i].weight
+				totalValue += items[i].value
+			}
+		}
+
+		if totalWeight <= 400 && totalWeight > 380 {
+			break
+		}
+	}
 
 	fmt.Println("Selected items:")
 	for i, bit := range solution.bits {
 		if bit == 1 {
 			fmt.Printf("%s ", items[i].name)
-			totalValue += items[i].value
-			totalWeight += items[i].weight
 		}
 	}
 
